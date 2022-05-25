@@ -1,7 +1,6 @@
 #ifndef __DEVIDECONFIG_H
 #define __DEVIDECONFIG_H
 
-
 /* Register DEVCFG3 */
 #pragma config PGL1WAY = OFF                // Permission Group Lock One Way Configuration
 #pragma config PMDL1WAY = OFF               // Peripheral Module Disable Configuration
@@ -22,7 +21,7 @@
 #pragma config FSOSCEN = OFF                // Secondary Oscillator Enable
 #pragma config IESO = OFF                   // Internal External Switchover
 #pragma config POSCMOD = EC                 // Primary Oscillator Configuration
-#pragma config OSCIOFNC = OFF               // CLKO Enable Configuration
+#pragma config OSCIOFNC = ON                // CLKO Enable Configuration
 #pragma config FCKSM = CSECME               // Clock Switching and Monitoring Selection Configuration
 #pragma config WDTPS = PS1048576            // Watchdog Timer Postscale Select
 #pragma config WDTSPGM = STOP               // Watchdog Timer Stop During Flash Programming
@@ -55,51 +54,35 @@
 #pragma config CP = OFF                     // Code Protect
 
 void Set_MaxSpeed_Mode(void){   
-	unsigned int caching;
 	
     // Unlock Sequence
-    asm volatile("di"); // Disable all interrupts
+    asm volatile("di");                     // Disable all interrupts
     SYSKEY = 0xAA996655;
     SYSKEY = 0x556699AA;  
 
     // PB1DIV
-    // Peripheral Bus 1 cannot be turned off, so there's no need to turn it on
-    PB1DIVbits.PBDIV = 1; // Peripheral Bus 1 Clock Divisor Control (PBCLK1 is SYSCLK divided by 2)
+    PB1DIVbits.PBDIV = 0;
 
     // PB2DIV
-    PB2DIVbits.ON = 1; // Peripheral Bus 2 Output Clock Enable (Output clock is enabled)
-    PB2DIVbits.PBDIV = 1; // Peripheral Bus 2 Clock Divisor Control (PBCLK2 is SYSCLK divided by 2)
+    PB2DIVbits.ON = 1;
+    PB2DIVbits.PBDIV = 0;
 
     // PB3DIV
-    PB3DIVbits.ON = 1; // Peripheral Bus 2 Output Clock Enable (Output clock is enabled)
-    PB3DIVbits.PBDIV = 1; // Peripheral Bus 3 Clock Divisor Control (PBCLK3 is SYSCLK divided by 2)
+    PB3DIVbits.ON = 1;
+    PB3DIVbits.PBDIV = 0;
 
     // PB4DIV
-    PB4DIVbits.ON = 1; // Peripheral Bus 4 Output Clock Enable (Output clock is enabled)
-    while (!PB4DIVbits.PBDIVRDY); // Wait until it is ready to write to
-    PB4DIVbits.PBDIV = 0; // Peripheral Bus 4 Clock Divisor Control (PBCLK4 is SYSCLK divided by 1)
+    PB4DIVbits.ON = 1;
+    while (!PB4DIVbits.PBDIVRDY);
+    PB4DIVbits.PBDIV = 0;
 
-    // PB5DIV
-    PB5DIVbits.ON = 1; // Peripheral Bus 5 Output Clock Enable (Output clock is enabled)
-    PB5DIVbits.PBDIV = 1; // Peripheral Bus 5 Clock Divisor Control (PBCLK5 is SYSCLK divided by 2)
-
-    // PB7DIV
-    PB7DIVbits.ON = 1; // Peripheral Bus 7 Output Clock Enable (Output clock is enabled)
-    PB7DIVbits.PBDIV = 0; // Peripheral Bus 7 Clock Divisor Control (PBCLK7 is SYSCLK divided by 1)
-
-    // PRECON - Set up prefetch
-    PRECONbits.PFMSECEN = 0; // Flash SEC Interrupt Enable (Do not generate an interrupt when the PFMSEC bit is set)
-    PRECONbits.PREFEN = 0b11; // Predictive Prefetch Enable (Enable predictive prefetch for any address)
-    PRECONbits.PFMWS = 0b010; // PFM Access Time Defined in Terms of SYSCLK Wait States (Two wait states)
-
-    // Set up caching
-    caching = _mfc0(16, 0);
-    caching &= ~0x07;
-    caching |= 0b011; // K0 = Cacheable, non-coherent, write-back, write allocate
-    _mtc0(16, 0, caching);  
+    // PB6DIV
+    PB6DIVbits.ON = 1;
+    PB6DIVbits.PBDIV = 0;
 
     // Lock Sequence
-    SYSKEY = 0x33333333;
-    asm volatile("ei"); // Enable all interrupts
+    SYSKEY = 0x00000000;
+    asm volatile("ei");                     // Enable all interrupts
 }
+
 #endif /* __DEVIDECONFIG_H */
